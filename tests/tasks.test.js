@@ -27,7 +27,6 @@ test('Should create task for user', async ()=>{
 
     const task= await Task.findById(response.body._id)
     expect(task).not.toBeNull()
-    expect(task.isCompleted).toEqual(false)
 
 })
 
