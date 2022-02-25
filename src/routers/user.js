@@ -2,25 +2,25 @@ const express = require('express')
 const User = require('../models/user')
 const auth = require('../middleware/auth')
 const router = new express.Router()
-const responseTime = require('response-time')
 
 
 router.post('/users', async (req, res) => {
     const user = new User(req.body)
-
+    console.log(user)
     try {
         await user.save()
         const token = await user.generateAuthToken()
         res.status(201).send({ user, token })
     } catch (e) {
-        res.status(400).send(e)
+        console.log(e)
+        res.status(400).send(e._message)
     }
 })
 
 router.post('/users/login', async (req, res) => {
     try {
         const user = await User.findByCredentials(req.body.email, req.body.password)
-        const token = await user.generateAuthToken()
+        const token = await user.generateAuthToken()  
         res.send({ user, token })
     } catch (e) {
         res.status(400).send()
