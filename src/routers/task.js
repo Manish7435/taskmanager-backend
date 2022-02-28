@@ -5,12 +5,50 @@ const auth = require('../middleware/auth')
 const router = new express.Router()
 
 const REDIS_PORT = process.env.REDIS_PORT || 6379
-const client = redis.createClient();
+const client = redis.createClient()
+const { Kafka } = require("kafkajs")
 
-   
-(async () => {
-    await client.connect()
-})();
+const clientId = "myapp"
+const brokers = ["localhost:9093"]
+const topic = "tasks"
+const kafka = new Kafka({ brokers })
+const producer = kafka.producer()
+const consumer = kafka.consumer({ groupId: clientId })
+
+const consume = async () => {
+	await consumer.connect()
+	await consumer.subscribe({ topic })
+	await consumer.run({
+		eachMessage: async({ message }) => {
+			console.log(`received message: ${message.value}`)
+      console.log(JSON.parse(message.value))
+      const task1=JSON.parse(message.value)
+      const newTask = new Task({
+          description : task1.description,
+          isCompleted : task1.isCompleted,
+          assignedTo : task1.assignedTo,
+          dueDate : task1.dueDate,
+          owner: task1.owner
+      })
+      const savedtask = await newTask.save()
+      const tasks = await Task.find({user:task1.owner})
+      await client.setEx(task1.user,3600*24,JSON.stringify(tasks))
+		}
+	})
+} 
+
+var connection =async () => {
+    await client.connect();
+    await producer.connect();
+    await consume();
+    console.log("connected Kafka")
+}
+connection();
+
+
+// (async () => {
+//     await client.connect()
+// })();
 
 router.post('/tasks', auth, async (req, res) => {
     const task = new Task({
@@ -18,11 +56,21 @@ router.post('/tasks', auth, async (req, res) => {
         owner: req.user._id
     })
     try {
-        // await task.save()
-        const savedtask = await task.save()
-        res.json(savedtask);
-        const tasks = await Task.find({owner:req.user._id});
-        client.setEx(req.user._id,3600*24,JSON.stringify(tasks));
+        
+        await producer.send({
+            topic,
+            messages: [
+              {
+                value: JSON.stringify(task)
+              }
+            ]
+          })
+          res.json("ok")
+        
+        // const savedtask = await task.save()
+        // res.json(savedtask);
+        // const tasks = await Task.find({owner:req.user._id});
+        // client.setEx(req.user._id,3600*24,JSON.stringify(tasks));
         
     } catch (e) {
         console.log(e)
@@ -72,7 +120,7 @@ router.get('/tasks', auth, async (req, res) => {
 
 router.patch('/tasks/:id', auth, async (req, res) => {
     const updates = Object.keys(req.body)
-    const allowedUpdates = ['description', 'isCompleted']
+    const allowedUpdates = ['description', 'isCompleted','dueDate','assignedTo']
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
 
     if (!isValidOperation) {
