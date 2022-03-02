@@ -11,10 +11,12 @@ const Task = mongoose.model('Task', {
         default: false
     },
     assignedTo:{
-        type: String
+        type: String,
+        required: true
     },
     dueDate:{
         type: String
+        // required:true
     },
     owner:{
         type: mongoose.Schema.Types.ObjectId,
@@ -40,4 +42,23 @@ module.exports = Task
 //     }
 // })
 
-// module.exports = Task
+// router.post("/", auth, async (req, res) => {
+//     try {
+//       const type = req.body.type; 
+//       const info = req.body.info;
+//       var date=req.body.due_date;
+//       const assignedto=req.body.assignedto;
+//       const iscompleted = req.body.iscompleted;
+//       var today = new Date();
+//       var dat = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+//         date=new Date(date)
+//         dat=new Date(dat)
+//         if(date.getTime()<dat.getTime()){
+//           res.status(500).send("Please Select future time");
+//         return
+//         }
+//       if(iscompleted != "Completed" && iscompleted!="Not Completed"){
+//         res.status(500).send("Not in Proper Form");
+//         return
+//       }
+      

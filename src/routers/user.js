@@ -4,9 +4,6 @@ const auth = require('../middleware/auth')
 const router = new express.Router()
 require('../app')
 
-
-
-
 router.post('/users', async (req, res) => {
     const user = new User(req.body)
     try {
