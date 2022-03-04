@@ -1,12 +1,12 @@
 export{}
 import express from 'express'
-import  User from '../models/user'
+import User from '../models/user'
 import auth from '../middleware/auth'
-const router = new express.Router()
+const router = new (express.Router as any)()
 require('../app')
 
 router.post('/users', async (req:any, res:any) => {
-    const user = new User(req.body)
+    const user:any = new User(req.body)
     try {
         await user.save()           
         const token = await user.generateAuthToken()
@@ -20,7 +20,6 @@ router.post('/users', async (req:any, res:any) => {
         res.status(400).send()
     }
 })
-
 
 router.post('/users/login', async (req:any, res:any) => {
     try {

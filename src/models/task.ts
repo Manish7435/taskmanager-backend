@@ -1,6 +1,14 @@
-import mongoose from 'mongoose'
+import {Schema, model} from 'mongoose'
 
-const Task = mongoose.model('Task', {
+interface Task {
+    description: string;
+    isCompleted: Boolean,
+    assignedTo: string,
+    dueDate: string,
+    owner: any
+  }
+
+const schema = new Schema<Task>({
     description: {
         type: String,
         required: true,
@@ -25,6 +33,10 @@ const Task = mongoose.model('Task', {
 
     }
 })
+
+const Task = model('Task', schema)
+
+
 
 export default Task
 

@@ -1,6 +1,6 @@
-import request from 'supertest'
-import app = require('../src/app')
-import User = require('../src/models/user')
+const request = require('supertest')
+const app = require('../src/app')
+const User = require('../src/models/user')
 const {userOne, userOneId, setupDatabase} = require('./fixtures/db')
 
 

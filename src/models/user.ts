@@ -1,11 +1,17 @@
-import mongoose from 'mongoose'
-import validator from  'validator'
+import mongoose, {Schema, model} from 'mongoose'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import * as Task from './task'
+import Task from './task'
 
+interface User {
+    name: string,
+    email: string,
+    password: string,
+    age: Number,
+    tokens: any
+}
 
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema<User>({
     name: {
         type: String,
         required: true,
@@ -28,11 +34,7 @@ const userSchema = new mongoose.Schema({
     age: {
         type: Number,
         default: 0,
-        validate(value:any) {
-            if (value < 0) {
-                throw new Error('Age must be a postive number')
-            }
-        }
+    
     },
     tokens: [{
         token: {
@@ -60,7 +62,8 @@ userSchema.methods.toJSON = function () {
 
 userSchema.methods.generateAuthToken = async function () {
     const user = this
-    const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET)
+    const jwtSecret:any = process.env.JWT_SECRET? process.env.JWT_SECRET : "";
+    const token = jwt.sign({ _id: user._id.toString() }, jwtSecret)
     user.tokens = user.tokens.concat({ token })
     await user.save()
     return token
@@ -82,6 +85,7 @@ userSchema.statics.findByCredentials = async (email:any, password:any) => {
     return user
 }
 
+
 // Hash the plain text password before saving
 userSchema.pre('save', async function (next:any) {
     const user = this
@@ -100,9 +104,7 @@ userSchema.pre('remove', async function (next:any) {
     next()
 })
 
-const User = mongoose.model('User', userSchema)
+const User = model('User', userSchema)
 
 export default User
-
-
 
