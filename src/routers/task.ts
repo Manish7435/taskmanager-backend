@@ -1,13 +1,13 @@
-const express = require('express')
-const Task = require('../models/task')
-const redis = require('redis');
-const auth = require('../middleware/auth')
-const schedule = require('node-schedule')
+import express from 'express'
+import * as Task from '../models/task'
+import redis from 'redis'
+import * as auth from '../middleware/auth'
+import * as schedule from 'node-schedule'
 const router = new express.Router()
 
 const REDIS_PORT = process.env.REDIS_PORT || 6379
 const client = redis.createClient()
-const { Kafka } = require("kafkajs")
+import { Kafka } from "kafkajs"
 
 const clientId = "myapp"
 const brokers = ["localhost:9093"]
@@ -20,11 +20,11 @@ const consume = async () => {
     await consumer.connect()
     await consumer.subscribe({ topic })
     await consumer.run({
-        eachMessage: async ({ message }) => {
+        eachMessage: async ({ message}:any) => {
             console.log(`received message: ${message.value}`)
             console.log(JSON.parse(message.value))
             const task1 = JSON.parse(message.value)
-            const newTask = new Task({
+            const newTask= new Task({
                 description: task1.description,
                 isCompleted: task1.isCompleted,
                 assignedTo: task1.assignedTo,
@@ -51,7 +51,7 @@ connection();
 //     await client.connect()
 // })();
 
-router.post('/tasks', auth, async (req, res) => {
+router.post('/tasks', auth, async (req:any, res:any) => {
     const task = new Task({
         ...req.body,
         owner: req.user._id
@@ -80,9 +80,9 @@ router.post('/tasks', auth, async (req, res) => {
 })
 
 
-router.get('/tasks', auth, async (req, res) => {
+router.get('/tasks', auth, async (req:any, res:any) => {
     try {
-        client.get(req.user._id, (err, tasks) => {
+        client.get(req.user._id, (err:any, tasks:any) => {
             if (err) throw err;
 
             if (tasks !== null) {
@@ -105,7 +105,7 @@ router.get('/tasks', auth, async (req, res) => {
 })
 
 
-router.patch('/tasks/:id', auth, async (req, res) => {
+router.patch('/tasks/:id', auth, async (req:any, res:any) => {
     const updates = Object.keys(req.body)
     const allowedUpdates = ['description', 'isCompleted', 'dueDate', 'assignedTo']
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
@@ -132,7 +132,7 @@ router.patch('/tasks/:id', auth, async (req, res) => {
     }
 })
 
-router.delete('/tasks/:id', auth, async (req, res) => {
+router.delete('/tasks/:id', auth, async (req:any, res:any) => {
     try {
         const task = await Task.findOneAndDelete({ _id: req.params.id, owner: req.user._id })
         if (!task) {
@@ -155,14 +155,14 @@ router.delete('/tasks/:id', auth, async (req, res) => {
 
 
 
-schedule.scheduleJob('* 17 * * 1-7', async (req,res) => {
+schedule.scheduleJob('* 17 * * 1-7', async () => {
     console.log("Running schedule...")
     var tasks = await Task.find({})
-    tasks.filter((task) => {
+    tasks.filter((task:any) => {
         return task.isCompleted === true
     })
 
-    tasks.forEach(async task => {
+    tasks.forEach(async (task:any) => {
         var due = task.dueDate.split('-')
         var myDueDate = new Date(due[0], due[1] - 1, due[2])
         var todayParts = new Date()
@@ -174,7 +174,7 @@ schedule.scheduleJob('* 17 * * 1-7', async (req,res) => {
         }
         const id = task._id;
         Task.findByIdAndUpdate(id, { isCompleted: a },
-            function (err, docs) {
+            function (err:any, docs:any) {
                 if (err) {
                     console.log(err)
                 }
@@ -187,4 +187,4 @@ schedule.scheduleJob('* 17 * * 1-7', async (req,res) => {
 
 })
 
-module.exports = router
+export default router

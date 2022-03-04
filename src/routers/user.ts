@@ -1,13 +1,14 @@
-const express = require('express')
-const User = require('../models/user')
-const auth = require('../middleware/auth')
+export{}
+import express from 'express'
+import  User from '../models/user'
+import auth from '../middleware/auth'
 const router = new express.Router()
 require('../app')
 
-router.post('/users', async (req, res) => {
+router.post('/users', async (req:any, res:any) => {
     const user = new User(req.body)
     try {
-        await user.save()           //////////////////////
+        await user.save()           
         const token = await user.generateAuthToken()
         res.cookie('token',token,{
             expire: new Date(Date.now()+5000),
@@ -16,12 +17,12 @@ router.post('/users', async (req, res) => {
         res.status(201).send({ user, token })
     } catch (e) {
         console.log(e)
-        res.status(400).send(e._message)
+        res.status(400).send()
     }
 })
 
 
-router.post('/users/login', async (req, res) => {
+router.post('/users/login', async (req:any, res:any) => {
     try {
         const user = await User.findByCredentials(req.body.email, req.body.password)
         const token = await user.generateAuthToken()  
@@ -36,9 +37,9 @@ router.post('/users/login', async (req, res) => {
     }
 })
 
-router.post('/users/logout', auth, async (req, res) => {
+router.post('/users/logout', auth, async (req:any, res:any) => {
     try {
-        req.user.tokens = req.user.tokens.filter((token) => {
+        req.user.tokens = req.user.tokens.filter((token:any) => {
             return token.token !== req.token
         })
         await req.user.save()
@@ -53,7 +54,7 @@ router.post('/users/logout', auth, async (req, res) => {
     }
 })
 
-router.post('/users/logoutAll', auth, async (req, res) => {
+router.post('/users/logoutAll', auth, async (req:any, res:any) => {
     try {
         req.user.tokens = []
         await req.user.save()
@@ -63,7 +64,7 @@ router.post('/users/logoutAll', auth, async (req, res) => {
     }
 })
 
-router.get('/users/me', auth, async (req, res) => {
+router.get('/users/me', auth, async (req:any, res:any) => {
     res.cookie('token',req.user.token,{
         expires: new Date(Date.now()+5000),
         httpOnly:true
@@ -72,7 +73,7 @@ router.get('/users/me', auth, async (req, res) => {
 
 })
 
-router.patch('/users/me', auth, async (req, res) => {
+router.patch('/users/me', auth, async (req:any, res:any) => {
     const updates = Object.keys(req.body)
     const allowedUpdates = ['name', 'email', 'password', 'age']
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
@@ -93,7 +94,7 @@ router.patch('/users/me', auth, async (req, res) => {
     }
 })
 
-router.delete('/users/me', auth, async (req, res) => {
+router.delete('/users/me', auth, async (req:any, res:any) => {
     try {
         await req.user.remove()
         res.send(req.user)
@@ -102,4 +103,4 @@ router.delete('/users/me', auth, async (req, res) => {
     }
 })
 
-module.exports = router
+export default router

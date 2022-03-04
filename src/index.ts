@@ -1,7 +1,7 @@
 const app = require('./app')
 const cors = require('cors')
 app.use(cors())
-app.get('/users', function (req, res, next) {
+app.get('/users', function (req:any, res:any, next:any) {
     res.json({msg: 'This is CORS-enabled for all origins!'})
     next()
   })

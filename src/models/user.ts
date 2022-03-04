@@ -1,8 +1,8 @@
-const mongoose = require('mongoose')
-const validator = require('validator')
-const bcrypt = require('bcryptjs')
-const jwt = require('jsonwebtoken')
-const Task = require('./task')
+import mongoose from 'mongoose'
+import validator from  'validator'
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
+import * as Task from './task'
 
 
 const userSchema = new mongoose.Schema({
@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
     age: {
         type: Number,
         default: 0,
-        validate(value) {
+        validate(value:any) {
             if (value < 0) {
                 throw new Error('Age must be a postive number')
             }
@@ -66,7 +66,7 @@ userSchema.methods.generateAuthToken = async function () {
     return token
 }
 
-userSchema.statics.findByCredentials = async (email, password) => {
+userSchema.statics.findByCredentials = async (email:any, password:any) => {
     const user = await User.findOne({ email })
 
     if (!user) {
@@ -83,7 +83,7 @@ userSchema.statics.findByCredentials = async (email, password) => {
 }
 
 // Hash the plain text password before saving
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function (next:any) {
     const user = this
 
     if (user.isModified('password')) {
@@ -94,7 +94,7 @@ userSchema.pre('save', async function (next) {
 })
 
 // Delete user tasks when user is removed
-userSchema.pre('remove', async function (next) {
+userSchema.pre('remove', async function (next:any) {
     const user = this
     await Task.deleteMany({ owner: user._id })
     next()
@@ -102,7 +102,7 @@ userSchema.pre('remove', async function (next) {
 
 const User = mongoose.model('User', userSchema)
 
-module.exports = User
+export default User
 
 
 
