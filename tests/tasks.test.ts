@@ -1,8 +1,8 @@
 
-const request = require('supertest')
-const { response } = require('../src/app')
-const app = require('../src/app')
-const Task = require('../src/models/task')
+import request from 'supertest'
+import { response } from'../src/app'
+import app from'../src/app'
+import Task from'../src/models/task'
 const {
     userOneId,
     userOne,
